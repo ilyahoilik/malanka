@@ -8,8 +8,14 @@ import (
 )
 
 type Storage struct {
-	engine engine.Engine
+	engine Engine
 	logger *zap.Logger
+}
+
+type Engine interface {
+	Set(k, v string)
+	Get(k string) (string, bool)
+	Del(k string) bool
 }
 
 func NewStorage(logger *zap.Logger) *Storage {
@@ -38,10 +44,6 @@ func (s *Storage) Get(key string) (string, error) {
 
 func (s *Storage) Del(key string) error {
 	s.logger.Info(fmt.Sprintf("deleting %s from storage", key))
-	if deleted := s.engine.Del(key); !deleted {
-		s.logger.Info(fmt.Sprintf("trying to delete non-existence key %s", key))
-		return errors.New("key not found")
-	} else {
-		return nil
-	}
+	s.engine.Del(key)
+	return nil
 }
